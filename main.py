@@ -179,7 +179,7 @@ if __name__ == '__main__':
                 if curr_time > end_time:
                     current_text = update_bio(browser, current_text)
                     sleep(randint(5, 10))
-                    slideshow_profile_picture(browser, "./images", slideshow_index)
+                    slideshow_profile_picture(browser, "./imagesTest", slideshow_index)
                     Log.status('Session expired, restarting')
                     browser.quit()
                     slideshow_index += 1
