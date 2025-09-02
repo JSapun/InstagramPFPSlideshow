@@ -11,8 +11,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from datetime import datetime, timedelta
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service as ChromeService
+#from webdriver_manager.chrome import ChromeDriverManager
+#from selenium.webdriver.chrome.service import Service as ChromeService
 from termcolor import colored
 
 def setup(method: str = 'windows'):
@@ -59,6 +59,7 @@ def build_text():
 def get_current_bio(browser: webdriver.Chrome):
     ''' Returns: Current Instagram biography text. '''
     get_account_details(browser)
+    sleep(randint(5, 20))
     biography_input = browser.find_element(By.CSS_SELECTOR, "textarea[id='pepBio']")
     return biography_input.get_attribute('value')
 
@@ -83,6 +84,7 @@ def update_bio(browser: webdriver.Chrome, current_text: str):
     new_text = build_text()
     if current_text != new_text:
         get_account_details(browser)
+        sleep(randint(5, 60))
         biography_input = browser.find_element(By.CSS_SELECTOR, "textarea[id='pepBio']")
         biography_input.clear()
         biography_input.send_keys(new_text)
@@ -107,6 +109,7 @@ def update_profile_picture(browser: webdriver.Chrome, path: str):
 
     get_account_details(browser)
     image = os.path.abspath(path)  # need absolute path
+    sleep(randint(5, 60))
     upload_maybe = browser.find_element(By.XPATH, "//input[@type='file' and @class='_ac69']")  # Secret form element
     upload_maybe.send_keys(image)  # upload
 
@@ -146,14 +149,17 @@ def get_img_path(path: str, index: int):
             return image
 
 def begin_slideshow(user: str, pwd: str, minutes: int):
+    count = 0
     fail = 0
     slideshow_index = 0
     imgs = number_of_img("./imagesTest")
     while fail <= 10:
         try:
-            browser = setup()
+            browser = setup("pi")
+            sleep(randint(5, 10))
             login(browser, user, pwd)
             print(colored("[-]", "white")+colored(' Login success!', "green"))
+            sleep(randint(5, 10))
             current_text = get_current_bio(browser)
             print(colored("[i]", "white") + colored(f' Current text: \n{current_text}', "blue"))
             end_time = calculate_end(minutes)
@@ -162,33 +168,35 @@ def begin_slideshow(user: str, pwd: str, minutes: int):
                 curr_time = datetime.now()
                 if curr_time > end_time:
                     update_bio(browser, current_text)
-                    sleep(randint(5, 10))
+                    sleep(randint(10, 20))
                     img = get_img_path("./imagesTest", slideshow_index)
                     update_profile_picture(browser, str(img))
                     print(colored("[i]", "white") + colored('Updated, session will restart', "blue"))
-                    browser.quit()
                     if slideshow_index >= (imgs-1):
                         slideshow_index = 0
                     else:
                         slideshow_index += 1
                     browser.quit()
+                    count += 1
                     break
                 fail = 0
                 sleep(int((minutes/4)*60))
 
         except KeyboardInterrupt:
             #browser.quit()
+            print(colored("\n[i]", "white")+colored(" Updated "+str(count)+" times!", "yellow"))
             break
         except Exception as e:
             print(colored("[!]", "white") + colored(str(e), "red"))
             print(colored("[!]", "white") + colored(str(e.__traceback__), "red"))
             print(colored("[!]", "white") + colored(f'Failed: #{fail}', "red"))
+            print(colored("\n[i]", "white")+colored(" Updated "+str(count)+" times!", "yellow"))
             #browser.quit()
             fail += 1
             sleep(randint(720, 960))
 
 
 if __name__ == '__main__':
-    begin_slideshow("rnyannill", "rspamyan", 1)
-    print(colored("[-]", "white") + colored('Process exiting...', "green"))
+    begin_slideshow("williamoldgothacked", "rspamyann", 1440)
+    print(colored("[-]", "white") + colored(' Process exiting...', "green"))
     sys.exit(0)
